@@ -1,0 +1,16 @@
+{
+  "name": "rtmbackend",
+  "version": "1.0.0",
+  "description": "Backend of RTM Office Viewer",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "inliner": "^1.13.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

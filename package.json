@@ -4,6 +4,7 @@
   "description": "Backend of RTM Office Viewer",
   "main": "index.js",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "inliner": "^1.13.1"
   },

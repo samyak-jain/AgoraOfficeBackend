@@ -6,7 +6,7 @@ const httpProxy = require('http-proxy');
 const app = express()
 const port = process.env.PORT || 3000
 const corsOptions = {
-    origin: '*'
+    origin: true
 }
 
 const proxy = httpProxy.createProxyServer({});
@@ -20,8 +20,7 @@ proxy.on("proxyReq", (proxyReq, req, res, options) => {
 
 proxy.on("error", (err, req, res) => {
     console.warn(err);
-    // res.send("");
-})
+});
 
 app.use(cors(corsOptions));
 app.use(require('morgan')('dev', {
@@ -37,6 +36,8 @@ app.get('/do', (req, res) => {
     console.info(`Sending request to URL: ${mainUrl}`);
     request(mainUrl).pipe(res);
 });
+
+app.post('/upload')
 
 app.all('*', (req, res) => {
     const proxyUrl = "https://US6-word-view.officeapps.live.com/wv/"

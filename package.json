@@ -9,7 +9,8 @@
     "express-fileupload": "^1.1.6",
     "http-proxy": "^1.18.0",
     "morgan": "^1.10.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "uuid": "^7.0.2"
   },
   "devDependencies": {},
   "scripts": {

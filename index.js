@@ -25,8 +25,11 @@ proxy.on('error', (err, req, res) => {
 });
 
 app.use(cors(corsOptions));
-app.use(fileUpload());
+app.use(fileUpload({
+    createParentPath: true
+}));
 app.use('/files', express.static('files'));
+app.use('/assets', express.static('assets'));
 app.use(require('morgan')('dev', {
     skip: (req, res) => {
         return (req.url != "/" && req.url != '/do' && req.url != '/upload');
@@ -42,20 +45,45 @@ app.get('/do', (req, res) => {
 });
 
 app.post('/upload', (req, res) => {
+    console.log(req.files.file);
+
     if (!req.files || Object.keys(req.files).length === 0) {
         return res.status(400).send('No files were uploaded.');
     }
 
-    const uploadedFile = req.files.document;
+    const uploadedFile = req.files.file;
     const uploadUrl = `${uuidv4()}/${uploadedFile.name}`;
 
-    uploadedFile.mv(`files/${uploadUrl}`, (err) => {
+    uploadedFile.mv(`${__dirname}/files/${uploadUrl}`, (err) => {
         if (err) {
+            console.log(err);
             return res.status(500).send(err);
         }
 
         res.send(uploadUrl);
     });
+});
+
+app.get('/upload_ui', (req, res) => {
+    const url = req.query.url;
+    res.send(`
+        <!DOCTYPE HTML>
+        <html lang="en">
+
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link href="./assets/dropzone.min.css" rel="stylesheet">
+                <script src="./assets/dropzone.min.js"></script>
+                <title>File Upload</title>
+            </head>
+
+            <body>
+                <form action="./upload" class="dropzone"></form>
+            </body>
+        </html>
+
+    `)
 });
 
 app.all('*', (req, res) => {

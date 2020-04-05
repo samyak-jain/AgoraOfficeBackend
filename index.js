@@ -65,7 +65,6 @@ app.post('/upload', (req, res) => {
 });
 
 app.get('/upload_ui', (req, res) => {
-    const url = req.query.url;
     res.send(`
         <!DOCTYPE HTML>
         <html lang="en">
@@ -75,11 +74,23 @@ app.get('/upload_ui', (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link href="./assets/dropzone.min.css" rel="stylesheet">
                 <script src="./assets/dropzone.min.js"></script>
+                <script>Dropzone.autoDiscover = false;</script>
                 <title>File Upload</title>
             </head>
-
             <body>
-                <form action="./upload" class="dropzone"></form>
+                <div id="filePicker" class="dropzone"></div>
+                <script>
+                    var myDropzone = new Dropzone("div#filePicker", {
+                        url: "./upload",
+                        success: (file, response) => {
+                            console.log(file, response);
+                            const event = new CustomEvent("iframeEvent", {
+                                detail: response
+                            });
+                            window.parent.document.dispatchEvent(event);
+                        }
+                    });
+                </script>
             </body>
         </html>
 

@@ -3,6 +3,7 @@ const cors = require('cors');
 const request = require('request');
 const httpProxy = require('http-proxy');
 const fileUpload = require('express-fileupload');
+const asyncHandler = require('express-async-handler')
 const { v4: uuidv4 } = require('uuid');
 
 const app = express()
@@ -13,16 +14,16 @@ const corsOptions = {
 
 const proxy = httpProxy.createProxyServer({});
 
-proxy.on('proxyReq', (proxyReq, req, res, options) => {
+proxy.on('proxyReq', asyncHandler(async(proxyReq, req, res, options) => {
     const url = 'US6-word-view.officeapps.live.com';
     proxyReq.setHeader('origin', `https://${url}`);
     proxyReq.setHeader('authority', url);
     proxyReq.setHeader('referer', `https://${url}`);
-});
+}));
 
-proxy.on('error', (err, req, res) => {
+proxy.on('error', asyncHandler(async(err, req, res) => {
     console.warn(err);
-});
+}));
 
 app.use(cors(corsOptions));
 app.use(fileUpload({
@@ -36,15 +37,15 @@ app.use(require('morgan')('dev', {
     }
 }));
 
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', asyncHandler(async(req, res) => res.send('Hello World!')));
 
-app.get('/do', (req, res) => {
+app.get('/do', asyncHandler(async(req, res) => {
     const mainUrl = `https://US6-word-view.officeapps.live.com/wv/wordviewerframe.aspx?embed=1&ui=en%2DUS&rs=en%2DUS&WOPISrc=http%3A%2F%2Fus6%2Dview%2Dwopi%2Ewopi%2Elive%2Enet%3A808%2Foh%2Fwopi%2Ffiles%2F%40%2FwFileId%3FwFileId%3D${encodeURIComponent(req.query.url)}&access_token_ttl=0`;
     console.info(`Sending request to URL: ${mainUrl}`);
     request(mainUrl).pipe(res);
-});
+}));
 
-app.post('/upload', (req, res) => {
+app.post('/upload', asyncHandler(async(req, res) => {
     console.log(req.files.file);
 
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -62,9 +63,9 @@ app.post('/upload', (req, res) => {
 
         res.send(uploadUrl);
     });
-});
+}));
 
-app.get('/upload_ui', (req, res) => {
+app.get('/upload_ui', asyncHandler(async(req, res) => {
     res.send(`
         <!DOCTYPE HTML>
         <html lang="en">
@@ -95,15 +96,15 @@ app.get('/upload_ui', (req, res) => {
         </html>
 
     `)
-});
+}));
 
-app.all('*', (req, res) => {
+app.all('*', asyncHandler(async(req, res) => {
     const proxyUrl = 'https://US6-word-view.officeapps.live.com/wv/';
 
     proxy.web(req, res, {
         target: proxyUrl,
         changeOrigin: true
     });
-});
+}));
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

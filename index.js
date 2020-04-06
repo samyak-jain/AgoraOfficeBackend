@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const request = require('request');
 const httpProxy = require('http-proxy');
 const fileUpload = require('express-fileupload');
-const asyncHandler = require('express-async-handler')
+const asyncHandler = require('express-async-handler');
+const got = require('got');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express()
@@ -42,7 +42,8 @@ app.get('/', asyncHandler(async(req, res) => res.send('Hello World!')));
 app.get('/do', asyncHandler(async(req, res) => {
     const mainUrl = `https://US6-word-view.officeapps.live.com/wv/wordviewerframe.aspx?embed=1&ui=en%2DUS&rs=en%2DUS&WOPISrc=http%3A%2F%2Fus6%2Dview%2Dwopi%2Ewopi%2Elive%2Enet%3A808%2Foh%2Fwopi%2Ffiles%2F%40%2FwFileId%3FwFileId%3D${encodeURIComponent(req.query.url)}&access_token_ttl=0`;
     console.info(`Sending request to URL: ${mainUrl}`);
-    request(mainUrl).pipe(res);
+    const response = await got(mainUrl);
+    res.send(response.body);
 }));
 
 app.post('/upload', asyncHandler(async(req, res) => {

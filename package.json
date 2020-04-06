@@ -8,9 +8,9 @@
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
     "express-fileupload": "^1.1.6",
+    "got": "^10.7.0",
     "http-proxy": "^1.18.0",
     "morgan": "^1.10.0",
-    "request": "^2.88.2",
     "uuid": "^7.0.2"
   },
   "devDependencies": {},

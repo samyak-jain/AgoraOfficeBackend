@@ -4,6 +4,7 @@ const httpProxy = require('http-proxy');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
+const utf8 = require('utf8');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -49,7 +50,7 @@ app.get('/do', asyncHandler(async(req, res) => {
     const interRe = /'(.+)'/;
     const finalMatch = interRe.exec(intermediateMatch);
     
-    const mainUrl = finalMatch[1];
+    const mainUrl = utf8.decode(finalMatch[1]);
     console.info(`Sending request to URL: ${mainUrl}`);
     const response = await got(mainUrl);
     res.send(response.body);

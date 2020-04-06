@@ -6,11 +6,10 @@ const asyncHandler = require('express-async-handler');
 const got = require('got');
 const { v4: uuidv4 } = require('uuid');
 
-const app = express()
-const port = process.env.PORT || 3000
+const app = express();
 const corsOptions = {
     origin: true
-}
+};
 
 const proxy = httpProxy.createProxyServer({});
 
@@ -108,4 +107,4 @@ app.all('*', asyncHandler(async(req, res) => {
     });
 }));
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+module.exports = app;

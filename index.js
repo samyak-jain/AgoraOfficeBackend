@@ -12,6 +12,7 @@ const corsOptions = {
 };
 
 const proxy = httpProxy.createProxyServer({});
+const port = process.env.PORT || 3000
 
 proxy.on('proxyReq', asyncHandler(async(proxyReq, req, res, options) => {
     const url = 'US6-word-view.officeapps.live.com';
@@ -39,7 +40,16 @@ app.use(require('morgan')('dev', {
 app.get('/', asyncHandler(async(req, res) => res.send('Hello World!')));
 
 app.get('/do', asyncHandler(async(req, res) => {
-    const mainUrl = `https://US6-word-view.officeapps.live.com/wv/wordviewerframe.aspx?embed=1&ui=en%2DUS&rs=en%2DUS&WOPISrc=http%3A%2F%2Fus6%2Dview%2Dwopi%2Ewopi%2Elive%2Enet%3A808%2Foh%2Fwopi%2Ffiles%2F%40%2FwFileId%3FwFileId%3D${encodeURIComponent(req.query.url)}&access_token_ttl=0`;
+    const initialUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(req.query.url)}`;
+    const initialResponse = await got(initialUrl);
+
+    const re = /_iframeUrl = .+?_windowTitle/;
+    const intermediateMatch = re.exec(initialResponse.body)[0];
+
+    const interRe = /'(.+)'/;
+    const finalMatch = interRe.exec(intermediateMatch);
+    
+    const mainUrl = finalMatch[1];
     console.info(`Sending request to URL: ${mainUrl}`);
     const response = await got(mainUrl);
     res.send(response.body);
@@ -108,3 +118,5 @@ app.all('*', asyncHandler(async(req, res) => {
 }));
 
 module.exports = app;
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));

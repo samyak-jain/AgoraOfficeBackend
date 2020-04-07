@@ -135,7 +135,7 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
 }));
 
 app.all('/:docUrl/*', asyncHandler(async(req, res) => {
-    const proxyUrl = decodeURI(req.param.docUrl);
+    const proxyUrl = decodeURIComponent(req.param.docUrl);
     console.log(proxyUrl);
 
     proxy.web(req, res, {

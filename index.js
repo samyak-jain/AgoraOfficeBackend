@@ -52,6 +52,31 @@ app.get('/do', asyncHandler(async(req, res) => {
     const mainUrl = decodeURIComponent(JSON.parse(`"${finalMatch[1]}"`));
     console.info(`Sending request to URL: ${mainUrl}`);
     const response = await got(mainUrl);
+
+    const baseUrl = new URL(mainUrl);
+    baseUrl.pathname = baseUrl.pathname.split("/").filter(val => val)[0];
+
+    console.log("BaseUrl" + baseUrl.toString());
+
+    res.send({
+        baseUrl: baseUrl.toString(),
+        response: response.body
+    });
+}));
+
+app.get('/do_test', asyncHandler(async(req, res) => {
+    const initialUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(req.query.url)}`;
+    const initialResponse = await got(initialUrl);
+
+    const re = /_iframeUrl = .+?_windowTitle/;
+    const intermediateMatch = re.exec(initialResponse.body)[0];
+
+    const interRe = /'(.+)'/;
+    const finalMatch = interRe.exec(intermediateMatch);
+    
+    const mainUrl = decodeURIComponent(JSON.parse(`"${finalMatch[1]}"`));
+    console.info(`Sending request to URL: ${mainUrl}`);
+    const response = await got(mainUrl);
     res.send(response.body);
 }));
 
@@ -108,8 +133,9 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
     `)
 }));
 
-app.all('*', asyncHandler(async(req, res) => {
-    const proxyUrl = 'https://US6-word-view.officeapps.live.com/wv/';
+app.all('/:docUrl/*', asyncHandler(async(req, res) => {
+    const proxyUrl = req.param.docUrl;
+    console.log(proxyUrl);
 
     proxy.web(req, res, {
         target: proxyUrl,

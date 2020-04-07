@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const httpProxy = require('http-proxy');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
@@ -11,20 +11,31 @@ const corsOptions = {
     origin: true
 };
 
-const proxy = httpProxy.createProxyServer({});
+const proxy = createProxyMiddleware(
+    (path, req) => {
+        return (/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i.test(path));
+    }, {
+    target: "us6-word-view.officeapps.live.com/wv",
+    changeOrigin: true,
+    router: req => {
+        return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
+    },
+    pathRewrite: {
+        '^/proxy/.*/': ''
+    },
+    onProxyReq: (proxyReq, req, res, options) => {
+        const url = options.target;
+        console.log(url);
+        proxyReq.setHeader('origin', `https://${url}`);
+        proxyReq.setHeader('authority', url);
+        proxyReq.setHeader('referer', `https://${url}`);
+    },
+    onError: (err, req, res) => {
+        console.warn(err);
+    }
+});
+
 const port = process.env.PORT || 3000
-
-proxy.on('proxyReq', asyncHandler(async(proxyReq, req, res, options) => {
-    console.log(req);
-    const url = options.target;
-    proxyReq.setHeader('origin', `https://${url}`);
-    proxyReq.setHeader('authority', url);
-    proxyReq.setHeader('referer', `https://${url}`);
-}));
-
-proxy.on('error', asyncHandler(async(err, req, res) => {
-    console.warn(err);
-}));
 
 app.use(cors(corsOptions));
 app.use(fileUpload({
@@ -32,6 +43,7 @@ app.use(fileUpload({
 }));
 app.use('/files', express.static('files'));
 app.use('/assets', express.static('assets'));
+app.use(proxy)
 app.use(require('morgan')('dev', {
     skip: (req, res) => {
         return (req.url != "/" && req.url != '/do' && req.url != '/upload');
@@ -58,28 +70,12 @@ app.get('/do', asyncHandler(async(req, res) => {
     baseUrl.pathname = baseUrl.pathname.split("/").filter(val => val)[0];
     baseUrl.search = '';
 
-    console.log("BaseUrl" + baseUrl.toString());
+    console.log("BaseUrl " + baseUrl.toString());
 
     res.send({
         baseUrl: baseUrl.toString(),
         htmlContent: response.body
     });
-}));
-
-app.get('/do_test', asyncHandler(async(req, res) => {
-    const initialUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(req.query.url)}`;
-    const initialResponse = await got(initialUrl);
-
-    const re = /_iframeUrl = .+?_windowTitle/;
-    const intermediateMatch = re.exec(initialResponse.body)[0];
-
-    const interRe = /'(.+)'/;
-    const finalMatch = interRe.exec(intermediateMatch);
-    
-    const mainUrl = decodeURIComponent(JSON.parse(`"${finalMatch[1]}"`));
-    console.info(`Sending request to URL: ${mainUrl}`);
-    const response = await got(mainUrl);
-    res.send(response.body);
 }));
 
 app.post('/upload', asyncHandler(async(req, res) => {
@@ -133,16 +129,6 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
         </html>
 
     `)
-}));
-
-app.all('proxy/:docUrl/*', asyncHandler(async(req, res) => {
-    const proxyUrl = decodeURIComponent(req.param.docUrl);
-    console.log(proxyUrl);
-
-    proxy.web(req, res, {
-        target: proxyUrl,
-        changeOrigin: true
-    });
 }));
 
 module.exports = app;

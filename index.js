@@ -60,7 +60,7 @@ app.get('/do', asyncHandler(async(req, res) => {
 
     res.send({
         baseUrl: baseUrl.toString(),
-        response: response.body
+        htmlContent: response.body
     });
 }));
 

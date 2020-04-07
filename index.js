@@ -25,10 +25,13 @@ const proxy = createProxyMiddleware(
     },
     onProxyReq: (proxyReq, req, res, options) => {
         const url = options.target;
-        console.log(url);
+        console.log(proxyReq);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
+    },
+    onProxyRes: proxyRes => {
+        console.log(proxyRes);
     },
     onError: (err, req, res) => {
         console.warn(err);

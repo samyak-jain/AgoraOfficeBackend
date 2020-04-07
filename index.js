@@ -15,7 +15,8 @@ const proxy = httpProxy.createProxyServer({});
 const port = process.env.PORT || 3000
 
 proxy.on('proxyReq', asyncHandler(async(proxyReq, req, res, options) => {
-    const url = 'US6-word-view.officeapps.live.com';
+    console.log(req);
+    const url = options.target;
     proxyReq.setHeader('origin', `https://${url}`);
     proxyReq.setHeader('authority', url);
     proxyReq.setHeader('referer', `https://${url}`);

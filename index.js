@@ -55,6 +55,7 @@ app.get('/do', asyncHandler(async(req, res) => {
 
     const baseUrl = new URL(mainUrl);
     baseUrl.pathname = baseUrl.pathname.split("/").filter(val => val)[0];
+    baseUrl.search = '';
 
     console.log("BaseUrl" + baseUrl.toString());
 

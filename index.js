@@ -42,6 +42,7 @@ const proxy = createProxyMiddleware(
     },
     onProxyRes: proxyRes => {
         // console.log(proxyRes);
+        console.log("Status " + proxyRes.statusCode);
     },
     onError: (err, req, res) => {
         console.warn(err);

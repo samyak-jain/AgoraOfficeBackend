@@ -4,6 +4,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
+const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -27,15 +28,17 @@ const proxy = createProxyMiddleware(
     onProxyReq: (proxyReq, req, res, options) => {
         const url = options.target.hostname;
         console.log(url);
-        if (req.body) {
-            const bodyData = JSON.stringify(req.body);
-            console.log(bodyData);
-            proxyReq.write(bodyData);
-        }
+        
         // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
+
+        if (req.body) {
+            const bodyData = JSON.stringify(req.body);
+            console.log("Body " + bodyData);
+            proxyReq.write(bodyData);
+        }
     },
     onProxyRes: proxyRes => {
         // console.log(proxyRes);
@@ -53,6 +56,8 @@ app.use(fileUpload({
 }));
 app.use('/files', express.static('files'));
 app.use('/assets', express.static('assets'));
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 app.use(proxy)
 app.use(require('morgan')('dev', {
     skip: (req, res) => {

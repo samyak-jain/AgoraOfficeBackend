@@ -24,11 +24,8 @@ const proxy = createProxyMiddleware(
     pathRewrite: {
         '^/proxy/.*/': '/'
     },
-    logLevel: "debug",
     onProxyReq: (proxyReq, req, res, options) => {
-        const url = options.target.hostname;
-        console.log(url);
-        
+        const url = options.target.hostname;  
         // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
@@ -39,6 +36,8 @@ const proxy = createProxyMiddleware(
             console.log("Body " + bodyData);
             proxyReq.write(bodyData);
         }
+
+        console.log(proxyReq);
     },
     onProxyRes: proxyRes => {
         // console.log(proxyRes);

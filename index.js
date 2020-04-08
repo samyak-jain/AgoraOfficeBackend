@@ -15,23 +15,26 @@ const proxy = createProxyMiddleware(
     (path, req) => {
         return (/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i.test(path));
     }, {
-    target: "us6-word-view.officeapps.live.com/wv",
+    target: "https://us6-word-view.officeapps.live.com/wv",
     changeOrigin: true,
     router: req => {
         return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
     },
     pathRewrite: {
-        '^/proxy/.*/': ''
+        '^/proxy/.*/': '/'
     },
+    logLevel: "debug",
     onProxyReq: (proxyReq, req, res, options) => {
-        const url = options.target;
+        const url = options.target.hostname;
+        console.log(url);
         // console.log(proxyReq);
+        // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
     },
     onProxyRes: proxyRes => {
-        console.log(proxyRes);
+        // console.log(proxyRes);
     },
     onError: (err, req, res) => {
         console.warn(err);

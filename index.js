@@ -27,7 +27,11 @@ const proxy = createProxyMiddleware(
     onProxyReq: (proxyReq, req, res, options) => {
         const url = options.target.hostname;
         console.log(url);
-        // console.log(proxyReq);
+        if (req.body) {
+            const bodyData = JSON.stringify(req.body);
+            console.log(bodyData);
+            proxyReq.write(bodyData);
+        }
         // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);

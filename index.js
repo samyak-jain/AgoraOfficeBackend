@@ -196,7 +196,8 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     }
 
     console.log(response.headers);
-    res.writeHead(response.statuscode, response.headers);
+    res.statusCode = response.statusCode;
+    res.set(response.headers);
     res.send(response.body);
 }));
 

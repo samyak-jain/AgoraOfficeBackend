@@ -166,9 +166,9 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     }
 
     const headers = req.headers;
-    headers.origin = `https://${url}`;
-    headers.authority = url.toString();
-    headers.referer = `https://${url}`;
+    headers.origin = url.toString();
+    headers.authority = url.toString().substring(8);
+    headers.referer = url.toString();
     // headers.host = `https://officeapps.live.com`;
 
     try {

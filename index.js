@@ -178,14 +178,22 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     console.log(searchParams);
     console.log(req.body);
     console.log(headers);
-    const response = await got(requestURL, {
-        method: req.method,
-        searchParams: searchParams,
-        body: JSON.stringify(req.body),
-        allowGetBody: true,
-        headers: headers,
-        rejectUnauthorized: false
-    });
+
+    let response;
+
+    try {
+        response = await got(requestURL, {
+            method: req.method,
+            searchParams: searchParams,
+            body: JSON.stringify(req.body),
+            allowGetBody: true,
+            headers: headers,
+            rejectUnauthorized: false,
+            withCredentials: true
+        });
+    } catch (error) {
+        response = error.response;
+    }
 
     console.log(response.headers);
     res.set(response.headers);

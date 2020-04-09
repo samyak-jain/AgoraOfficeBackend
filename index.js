@@ -173,27 +173,22 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     headers.referer = headerUrl.toString();
     // headers.host = `https://officeapps.live.com`;
 
-    try {
-        console.log(requestURL.toString());
-        console.log(req.method);
-        console.log(searchParams);
-        console.log(req.body);
-        console.log(headers);
-        const response = await got(requestURL, {
-            method: req.method,
-            searchParams: searchParams,
-            body: JSON.stringify(req.body),
-            allowGetBody: true,
-            headers: headers,
-            rejectUnauthorized: false
-        });
+    console.log(requestURL.toString());
+    console.log(req.method);
+    console.log(searchParams);
+    console.log(req.body);
+    console.log(headers);
+    const response = await got(requestURL, {
+        method: req.method,
+        searchParams: searchParams,
+        body: JSON.stringify(req.body),
+        allowGetBody: true,
+        headers: headers,
+        rejectUnauthorized: false
+    });
 
-        res.set(response.headers);
-        res.send(response.body);
-    } catch (error) {
-        console.error(error);
-        res.writeHead(500, "Office servers are no longer working with library. Please contact developer");
-    }
+    res.set(response.headers);
+    res.send(response.body);
 }));
 
 module.exports = app;

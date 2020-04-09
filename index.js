@@ -170,8 +170,8 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     headerUrl.pathname = "";
     headers.origin = headerUrl.toString();
     headers.authority = headerUrl.toString().substring(8);
-    headers.referer = headerUrl.toString();
-    // headers.host = `https://officeapps.live.com`;
+    headers.referrer = headerUrl.toString();
+    headers.host = `https://officeapps.live.com`;
 
     console.log(requestURL.toString());
     console.log(req.method);
@@ -187,6 +187,7 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
         rejectUnauthorized: false
     });
 
+    console.log(response.headers);
     res.set(response.headers);
     res.send(response.body);
 }));

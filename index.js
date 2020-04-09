@@ -169,6 +169,7 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
     headers.origin = `https://${url}`;
     headers.authority = url.toString();
     headers.referer = `https://${url}`;
+    // headers.host = `https://officeapps.live.com`;
 
     try {
         console.log(requestURL.toString());
@@ -181,7 +182,8 @@ app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
             searchParams: searchParams,
             body: JSON.stringify(req.body),
             allowGetBody: true,
-            headers: headers
+            headers: headers,
+            rejectUnauthorized: false
         });
 
         res.set(response.headers);

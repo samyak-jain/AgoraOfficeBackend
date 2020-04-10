@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-// const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+// const proxy = require('express-http-proxy');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
@@ -12,52 +13,57 @@ const corsOptions = {
     origin: true
 };
 
-// const proxy = createProxyMiddleware(
-//     (path, req) => {
-//         return (/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i.test(path));
-//     }, {
-//     target: "https://us6-word-view.officeapps.live.com/wv",
-//     changeOrigin: true,
-//     router: req => {
-//         return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
-//     },
-//     pathRewrite: {
-//         '^/proxy/.*/': '/'
-//     },
-//     onProxyReq: (proxyReq, req, res, options) => {
-//         const url = options.target.hostname;  
-//         // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
-//         proxyReq.setHeader('origin', `https://${url}`);
-//         proxyReq.setHeader('authority', url);
-//         proxyReq.setHeader('referer', `https://${url}`);
+const proxy = createProxyMiddleware(
+    (path, req) => {
+        return (/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i.test(path));
+    }, {
+    target: "https://us6-word-view.officeapps.live.com/wv",
+    changeOrigin: true,
+    router: req => {
+        return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
+    },
+    pathRewrite: {
+        '^/proxy/.*/': '/'
+    },
+    cookiePathRewrite: {
+        "^/proxy/.*/": '/' 
+    },
+    onProxyReq: (proxyReq, req, res, options) => {
+        const url = options.target.hostname;  
+        // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
+        proxyReq.setHeader('origin', `https://${url}`);
+        proxyReq.setHeader('authority', url);
+        proxyReq.setHeader('referer', `https://${url}`);
 
-//         // if (req.body) {
-//         //     const bodyData = JSON.stringify(req.body);
-//         //     console.log("Body " + bodyData);
-//         //     proxyReq.write(bodyData);
-//         // }
+        // if (req.body) {
+        //     const bodyData = JSON.stringify(req.body);
+        //     console.log("Body " + bodyData);
+        //     proxyReq.write(bodyData);
+        // }
 
-//         // let bodyString = "";
+        // let bodyString = "";
 
-//         // proxyReq.on("data", chunk => {
-//         //     console.log("Incoming");
-//         //     bodyString += chunk.toString('utf-8');
-//         //     console.log(bodyString);
-//         // })
+        // proxyReq.on("data", chunk => {
+        //     console.log("Incoming");
+        //     bodyString += chunk.toString('utf-8');
+        //     console.log(bodyString);
+        // })
 
-//         console.log(proxyReq._host);
-//         console.log(proxyReq._header);
-//         console.log(proxyReq.path);
-//         // console.log(proxyReq);
-//     },
-//     onProxyRes: proxyRes => {
-//         // console.log(proxyRes);
-//         console.log("Status " + proxyRes.statusCode);
-//     },
-//     onError: (err, req, res) => {
-//         console.warn(err);
-//     }
-// });
+        // console.log(proxyReq._host);
+        // console.log(proxyReq._header);
+        console.log(proxyReq.path);
+        console.log(proxyReq);
+    },
+    onProxyRes: proxyRes => {
+        // console.log(proxyRes);
+        console.log("Status " + proxyRes.statusCode);
+    },
+    onError: (err, req, res) => {
+        console.warn(err);
+    }
+});
+
+
 
 const port = process.env.PORT || 3000
 
@@ -69,7 +75,8 @@ app.use('/files', express.static('files'));
 app.use('/assets', express.static('assets'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-// app.use(proxy);
+app.use(proxy);
+// app.use(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, proxy())
 app.use(require('morgan')('dev', {
     skip: (req, res) => {
         return (req.url != "/" && req.url != '/do' && req.url != '/upload');
@@ -157,49 +164,49 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
     `)
 }));
 
-app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
-    const url = new URL(decodeURIComponent(req.path.split('/').filter(val => val)[1]));
-    const requestURL = new URL(req.path.split('/').filter(val => val).slice(2).join("/"), url);
-    const searchParams = new URLSearchParams();
-    for (key in req.query) {
-        searchParams.append(key, req.query[key]);
-    }
+// app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
+//     const url = new URL(decodeURIComponent(req.path.split('/').filter(val => val)[1]));
+//     const requestURL = new URL(req.path.split('/').filter(val => val).slice(2).join("/"), url);
+//     const searchParams = new URLSearchParams();
+//     for (key in req.query) {
+//         searchParams.append(key, req.query[key]);
+//     }
 
-    const headers = req.headers;
-    const headerUrl = url;
-    headerUrl.pathname = "";
-    headers.origin = headerUrl.toString();
-    headers.authority = headerUrl.toString().substring(8);
-    headers.referrer = headerUrl.toString();
-    headers.host = `https://officeapps.live.com`;
+//     const headers = req.headers;
+//     const headerUrl = url;
+//     headerUrl.pathname = "";
+//     headers.origin = headerUrl.toString();
+//     headers.authority = headerUrl.toString().substring(8);
+//     headers.referrer = headerUrl.toString();
+//     headers.host = `https://officeapps.live.com`;
 
-    console.log(requestURL.toString());
-    console.log(req.method);
-    console.log(searchParams);
-    console.log(req.body);
-    console.log(headers);
+//     console.log(requestURL.toString());
+//     console.log(req.method);
+//     console.log(searchParams);
+//     console.log(req.body);
+//     console.log(headers);
 
-    let response;
+//     let response;
 
-    try {
-        response = await got(requestURL, {
-            method: req.method,
-            searchParams: searchParams,
-            body: JSON.stringify(req.body),
-            allowGetBody: true,
-            headers: headers,
-            rejectUnauthorized: false,
-            withCredentials: true
-        });
-    } catch (error) {
-        response = error.response;
-    }
+//     try {
+//         response = await got(requestURL, {
+//             method: req.method,
+//             searchParams: searchParams,
+//             body: JSON.stringify(req.body),
+//             allowGetBody: true,
+//             headers: headers,
+//             rejectUnauthorized: false,
+//             withCredentials: true
+//         });
+//     } catch (error) {
+//         response = error.response;
+//     }
 
-    console.log(response.headers);
-    res.statusCode = response.statusCode;
-    res.set(response.headers);
-    res.send(response.body);
-}));
+//     console.log(response.headers);
+//     res.statusCode = response.statusCode;
+//     res.set(response.headers);
+//     res.send(response.body);
+// }));
 
 module.exports = app;
 

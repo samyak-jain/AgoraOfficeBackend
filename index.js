@@ -64,6 +64,7 @@ const proxy = createProxyMiddleware(
     },
     onProxyRes: proxyRes => {
         // console.log(proxyRes);
+        proxyRes.setHeader("Access-Control-Allow-Origin", "*");
         console.log("Status " + proxyRes.statusCode);
     },
     onError: (err, req, res) => {

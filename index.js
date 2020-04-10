@@ -73,7 +73,6 @@ const proxy = createProxyMiddleware(
 
 const port = process.env.PORT || 3000
 
-app.use(cors(corsOptions));
 app.use(fileUpload({
     createParentPath: true
 }));
@@ -82,6 +81,7 @@ app.use('/assets', express.static('assets'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(proxy);
+app.use(cors(corsOptions));
 // app.use(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, proxy())
 app.use(require('morgan')('dev', {
     skip: (req, res) => {

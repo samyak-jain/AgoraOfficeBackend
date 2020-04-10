@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 // const proxy = require('express-http-proxy');
+// const streamify = require('stream-array')
+const querystring = require('querystring');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
@@ -28,12 +30,18 @@ const proxy = createProxyMiddleware(
     cookiePathRewrite: {
         "^/proxy/.*/": '/' 
     },
-    onProxyReq: (proxyReq, req, res, options) => {
-        const url = options.target.hostname;  
+    ws: true,
+    onProxyReq: (proxyReq, req, res, option) => {
+        const url = option.target.hostname;  
         // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
+
+        if (req.body) {
+            // option.buffer = req.body;
+            proxyReq.write(querystring.stringify(req.body));
+        }
 
         // if (req.body) {
         //     const bodyData = JSON.stringify(req.body);
@@ -62,8 +70,6 @@ const proxy = createProxyMiddleware(
         console.warn(err);
     }
 });
-
-
 
 const port = process.env.PORT || 3000
 

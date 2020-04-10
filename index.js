@@ -38,10 +38,10 @@ const proxy = createProxyMiddleware(
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
 
-        if (req.body) {
-            // option.buffer = req.body;
-            proxyReq.write(JSON.stringify(req.body));
-        }
+        // if (req.body) {
+        //     // option.buffer = req.body;
+        //     proxyReq.write(JSON.stringify(req.body));
+        // }
 
         // if (req.body) {
         //     const bodyData = JSON.stringify(req.body);
@@ -78,6 +78,7 @@ const proxy = createProxyMiddleware(
 
 const port = process.env.PORT || 3000
 
+app.use(proxy);
 app.use(fileUpload({
     createParentPath: true
 }));
@@ -85,7 +86,6 @@ app.use('/files', express.static('files'));
 app.use('/assets', express.static('assets'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(proxy);
 app.use(cors(corsOptions));
 // app.use(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, proxy())
 app.use(require('morgan')('dev', {

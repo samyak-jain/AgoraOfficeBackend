@@ -3,7 +3,7 @@ const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 // const proxy = require('express-http-proxy');
 // const streamify = require('stream-array')
-const querystring = require('querystring');
+// const querystring = require('querystring');
 const fileUpload = require('express-fileupload');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
@@ -40,7 +40,7 @@ const proxy = createProxyMiddleware(
 
         if (req.body) {
             // option.buffer = req.body;
-            proxyReq.write(querystring.stringify(req.body));
+            proxyReq.write(JSON.stringify(req.body));
         }
 
         // if (req.body) {

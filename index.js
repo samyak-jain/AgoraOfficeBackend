@@ -17,7 +17,7 @@ const corsOptions = {
 
 const proxy = createProxyMiddleware(
     (path, req) => {
-        return (/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i.test(path));
+        return (/^\/proxy\/(.*)\/?$/i.test(path));
     }, {
     target: "https://us6-word-view.officeapps.live.com/wv",
     changeOrigin: true,
@@ -30,6 +30,7 @@ const proxy = createProxyMiddleware(
     cookiePathRewrite: {
         "^/proxy/.*/": '/' 
     },
+    // logLevel: "debug",
     ws: true,
     onProxyReq: (proxyReq, req, res, option) => {
         const url = option.target.hostname;  
@@ -39,10 +40,9 @@ const proxy = createProxyMiddleware(
         proxyReq.setHeader('referer', `https://${url}`);
         proxyReq.setHeader('sec-fetch-site', 'same-origin');
 
-        // if (req.body) {
-        //     // option.buffer = req.body;
-        //     proxyReq.write(JSON.stringify(req.body));
-        // }
+        if (req.body) {
+            proxyReq.write(JSON.stringify(req.body));
+        }
 
         // if (req.body) {
         //     const bodyData = JSON.stringify(req.body);

@@ -5,6 +5,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // const streamify = require('stream-array')
 // const querystring = require('querystring');
 const fileUpload = require('express-fileupload');
+const inliner = require('inliner');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
 const bodyParser = require('body-parser');
@@ -113,7 +114,6 @@ app.get('/do', asyncHandler(async(req, res) => {
     
     const mainUrl = decodeURIComponent(JSON.parse(`"${finalMatch[1]}"`));
     console.info(`Sending request to URL: ${mainUrl}`);
-    const response = await got(mainUrl);
 
     const baseUrl = new URL(mainUrl);
     baseUrl.pathname = baseUrl.pathname.split("/").filter(val => val)[0];
@@ -121,9 +121,16 @@ app.get('/do', asyncHandler(async(req, res) => {
 
     console.log("BaseUrl " + baseUrl.toString());
 
-    res.send({
-        baseUrl: baseUrl.toString(),
-        htmlContent: response.body
+    new inliner(mainUrl, (error, html) => {
+        if (error == null) {
+            res.send({
+                baseUrl: baseUrl.toString(),
+                htmlContent: html
+            });
+        }
+        else {
+            throw new Error(error);
+        }
     });
 }));
 

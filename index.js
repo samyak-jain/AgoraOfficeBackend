@@ -37,6 +37,7 @@ const proxy = createProxyMiddleware(
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
+        proxyReq.setHeader('sec-fetch-site', 'same-origin');
 
         // if (req.body) {
         //     // option.buffer = req.body;
@@ -59,8 +60,8 @@ const proxy = createProxyMiddleware(
 
         // console.log(proxyReq._host);
         // console.log(proxyReq._header);
-        console.log(proxyReq.path);
-        console.log(proxyReq);
+        // console.log(proxyReq.path);
+        // console.log(proxyReq);
     },
     onProxyRes: (proxyRes, req, res) => {
         // console.log(proxyRes);
@@ -70,6 +71,10 @@ const proxy = createProxyMiddleware(
         .reduce((all, h) => ({ ...all, [h]: proxyRes.headers[h] }), {});
         cors(corsOptions)(req, res, () => {});
         console.log("Status " + proxyRes.statusCode);
+        if (proxyRes.statusCode == "404") {
+            console.log("Req URL: ");
+            console.log(req);
+        }
     },
     onError: (err, req, res) => {
         console.warn(err);
@@ -88,11 +93,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
 // app.use(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, proxy())
-app.use(require('morgan')('dev', {
-    skip: (req, res) => {
-        return (req.url != "/" && req.url != '/do' && req.url != '/upload');
-    }
-}));
+// app.use(require('morgan')('dev', {
+//     skip: (req, res) => {
+//         return (req.url != "/" && req.url != '/do' && req.url != '/upload');
+//     }
+// }));
 
 app.get('/', asyncHandler(async(req, res) => res.send('Hello World!')));
 

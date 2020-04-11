@@ -40,9 +40,9 @@ const proxy = createProxyMiddleware(
         proxyReq.setHeader('referer', `https://${url}`);
         proxyReq.setHeader('sec-fetch-site', 'same-origin');
 
-        if (req.body) {
-            proxyReq.write(JSON.stringify(req.body));
-        }
+        // if (req.body) {
+        //     proxyReq.write(JSON.stringify(req.body));
+        // }
 
         // if (req.body) {
         //     const bodyData = JSON.stringify(req.body);
@@ -61,6 +61,10 @@ const proxy = createProxyMiddleware(
         // console.log(proxyReq._host);
         // console.log(proxyReq._header);
         // console.log(proxyReq.path);
+        console.log(proxyReq.path);
+        if (proxyReq.path.includes("slide")) {
+            console.log(proxyReq);
+        }
         // console.log(proxyReq);
     },
     onProxyRes: (proxyRes, req, res) => {
@@ -71,10 +75,6 @@ const proxy = createProxyMiddleware(
         .reduce((all, h) => ({ ...all, [h]: proxyRes.headers[h] }), {});
         cors(corsOptions)(req, res, () => {});
         console.log("Status " + proxyRes.statusCode);
-        if (proxyRes.statusCode == "404") {
-            console.log("Req URL: ");
-            console.log(req);
-        }
     },
     onError: (err, req, res) => {
         console.warn(err);

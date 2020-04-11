@@ -25,10 +25,10 @@ const proxy = createProxyMiddleware(
         return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
     },
     pathRewrite: {
-        '^/proxy/.*/': '/'
+        '^/proxy/.*?/': '/'
     },
     cookiePathRewrite: {
-        "^/proxy/.*/": '/' 
+        "^/proxy/.*?/": '/' 
     },
     // logLevel: "debug",
     ws: true,
@@ -62,7 +62,7 @@ const proxy = createProxyMiddleware(
         // console.log(proxyReq._header);
         // console.log(proxyReq.path);
         console.log(proxyReq.path);
-        if (proxyReq.path.includes("slide")) {
+        if (proxyReq.path.includes("Slide")) {
             console.log(proxyReq);
         }
         // console.log(proxyReq);

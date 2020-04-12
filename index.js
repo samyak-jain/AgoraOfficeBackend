@@ -31,6 +31,7 @@ const proxy = createProxyMiddleware(
     cookiePathRewrite: {
         "^/proxy/.*?/": '/' 
     },
+    preserveHeaderKeyCase: true,
     // logLevel: "debug",
     ws: true,
     onProxyReq: (proxyReq, req, res, option) => {
@@ -71,10 +72,13 @@ const proxy = createProxyMiddleware(
     onProxyRes: (proxyRes, req, res) => {
         // console.log(proxyRes);
         // proxyRes.setHeader("Access-Control-Allow-Origin", "*");
+        console.log(proxyRes.headers);
         proxyRes.headers = Object.keys(proxyRes.headers)
         .filter(h => (!h.toLowerCase().startsWith('access-control-') && !h.toLowerCase().startsWith('vary')))
         .reduce((all, h) => ({ ...all, [h]: proxyRes.headers[h] }), {});
         cors(corsOptions)(req, res, () => {});
+        console.log(proxyRes.headers);
+        // console.log(res);
         console.log("Status " + proxyRes.statusCode);
     },
     onError: (err, req, res) => {

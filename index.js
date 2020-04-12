@@ -125,17 +125,24 @@ app.get('/do', asyncHandler(async(req, res) => {
 
     console.log("BaseUrl " + baseUrl.toString());
 
-    new inliner(mainUrl, (error, html) => {
-        if (error == null) {
-            res.send({
-                baseUrl: baseUrl.toString(),
-                htmlContent: html
-            });
-        }
-        else {
-            throw new Error(error);
-        }
-    });
+    // new inliner(mainUrl, (error, html) => {
+    //     if (error == null) {
+    //         res.send({
+    //             baseUrl: baseUrl.toString(),
+    //             htmlContent: html
+    //         });
+    //     }
+    //     else {
+    //         throw new Error(error);
+    //     }
+    // });
+
+    const response = await got(mainUrl);
+
+    res.send({
+        baseUrl: baseUrl.toString(),
+        htmlContent: response.body
+    })
 }));
 
 app.post('/upload', asyncHandler(async(req, res) => {

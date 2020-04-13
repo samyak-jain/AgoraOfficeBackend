@@ -23,7 +23,11 @@ const proxy = createProxyMiddleware(
     target: "https://us6-word-view.officeapps.live.com/wv",
     changeOrigin: true,
     router: req => {
-        return decodeURIComponent(req.path.split('/').filter(val => val)[1]);
+        let newTarget = decodeURIComponent(req.url.split('/').filter(val => val)[1]);
+        if (!newTarget.startsWith("http")) {
+           newTarget = `https://${newTarget}`;
+        }
+        return newTarget;
     },
     pathRewrite: {
         '^/proxy/.*?/': '/'

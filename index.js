@@ -133,7 +133,6 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
                     var myDropzone = new Dropzone("div#filePicker", {
                         url: "./upload",
                         success: (file, response) => {
-                            console.log(file, response);
                             const event = new CustomEvent("iframeEvent", {
                                 detail: response
                             });

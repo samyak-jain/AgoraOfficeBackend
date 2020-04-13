@@ -1,11 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-// const proxy = require('express-http-proxy');
-// const streamify = require('stream-array')
-// const querystring = require('querystring');
 const fileUpload = require('express-fileupload');
-const inliner = require('inliner');
 const asyncHandler = require('express-async-handler');
 const got = require('got');
 const bodyParser = require('body-parser');
@@ -36,53 +32,20 @@ const proxy = createProxyMiddleware(
         "^/proxy/.*?/": '/' 
     },
     preserveHeaderKeyCase: true,
-    // logLevel: "debug",
     ws: true,
     onProxyReq: (proxyReq, req, res, option) => {
-        const url = option.target.hostname;  
-        // console.log(proxyReq.protocol + '://' + proxyReq.hostname + proxyReq.originalUrl);
+        const url = option.target.hostname;
         proxyReq.setHeader('origin', `https://${url}`);
         proxyReq.setHeader('authority', url);
         proxyReq.setHeader('referer', `https://${url}`);
         proxyReq.setHeader('sec-fetch-site', 'same-origin');
-
-        // if (req.body) {
-        //     proxyReq.write(JSON.stringify(req.body));
-        // }
-
-        // if (req.body) {
-        //     const bodyData = JSON.stringify(req.body);
-        //     console.log("Body " + bodyData);
-        //     proxyReq.write(bodyData);
-        // }
-
-        // let bodyString = "";
-
-        // proxyReq.on("data", chunk => {
-        //     console.log("Incoming");
-        //     bodyString += chunk.toString('utf-8');
-        //     console.log(bodyString);
-        // })
-
-        // console.log(proxyReq._host);
-        // console.log(proxyReq._header);
-        // console.log(proxyReq.path);
-        console.log(proxyReq.path);
-        if (proxyReq.path.includes("Slide")) {
-            console.log(proxyReq);
-        }
-        // console.log(proxyReq);
     },
     onProxyRes: (proxyRes, req, res) => {
-        // console.log(proxyRes);
-        // proxyRes.setHeader("Access-Control-Allow-Origin", "*");
-        console.log(proxyRes.headers);
         proxyRes.headers = Object.keys(proxyRes.headers)
         .filter(h => (!h.toLowerCase().startsWith('access-control-') && !h.toLowerCase().startsWith('vary')))
         .reduce((all, h) => ({ ...all, [h]: proxyRes.headers[h] }), {});
         cors(corsOptions)(req, res, () => {});
         console.log(proxyRes.headers);
-        // console.log(res);
         console.log("Status " + proxyRes.statusCode);
     },
     onError: (err, req, res) => {
@@ -101,12 +64,6 @@ app.use('/files', express.static('files'));
 app.use('/assets', express.static('assets'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-// app.use(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, proxy())
-// app.use(require('morgan')('dev', {
-//     skip: (req, res) => {
-//         return (req.url != "/" && req.url != '/do' && req.url != '/upload');
-//     }
-// }));
 
 app.get('/', asyncHandler(async(req, res) => res.send('Hello World!')));
 
@@ -128,18 +85,6 @@ app.get('/do', asyncHandler(async(req, res) => {
     baseUrl.search = '';
 
     console.log("BaseUrl " + baseUrl.toString());
-
-    // new inliner(mainUrl, (error, html) => {
-    //     if (error == null) {
-    //         res.send({
-    //             baseUrl: baseUrl.toString(),
-    //             htmlContent: html
-    //         });
-    //     }
-    //     else {
-    //         throw new Error(error);
-    //     }
-    // });
 
     const response = await got(mainUrl);
 
@@ -201,50 +146,6 @@ app.get('/upload_ui', asyncHandler(async(req, res) => {
 
     `)
 }));
-
-// app.all(/^\/proxy\/(?:([^\/]+?))\/(.*)\/?$/i, asyncHandler(async(req, res) => {
-//     const url = new URL(decodeURIComponent(req.path.split('/').filter(val => val)[1]));
-//     const requestURL = new URL(req.path.split('/').filter(val => val).slice(2).join("/"), url);
-//     const searchParams = new URLSearchParams();
-//     for (key in req.query) {
-//         searchParams.append(key, req.query[key]);
-//     }
-
-//     const headers = req.headers;
-//     const headerUrl = url;
-//     headerUrl.pathname = "";
-//     headers.origin = headerUrl.toString();
-//     headers.authority = headerUrl.toString().substring(8);
-//     headers.referrer = headerUrl.toString();
-//     headers.host = `https://officeapps.live.com`;
-
-//     console.log(requestURL.toString());
-//     console.log(req.method);
-//     console.log(searchParams);
-//     console.log(req.body);
-//     console.log(headers);
-
-//     let response;
-
-//     try {
-//         response = await got(requestURL, {
-//             method: req.method,
-//             searchParams: searchParams,
-//             body: JSON.stringify(req.body),
-//             allowGetBody: true,
-//             headers: headers,
-//             rejectUnauthorized: false,
-//             withCredentials: true
-//         });
-//     } catch (error) {
-//         response = error.response;
-//     }
-
-//     console.log(response.headers);
-//     res.statusCode = response.statusCode;
-//     res.set(response.headers);
-//     res.send(response.body);
-// }));
 
 module.exports = app;
 
